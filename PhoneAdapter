@@ -1,0 +1,111 @@
+package com.bytessystem.phonebook;
+
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class PhoneAdapter extends ArrayAdapter {
+    ArrayList<Phone> al;
+    Context context;
+    TextView fname, num1, fb;
+    ImageView img1, img2, call, sms;
+    //String gender,num;
+
+
+    public PhoneAdapter(@NonNull Context context, ArrayList<Phone> objects) {
+        super(context, R.layout.phone_list, objects);
+        this.context = context;
+        al = objects;
+    }
+
+    @NonNull
+    @Override
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+
+        if (convertView == null) {
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            convertView = inflater.inflate(R.layout.phone_list, null);
+        }
+
+
+        fname = convertView.findViewById(R.id.fname);
+        num1 = convertView.findViewById(R.id.num1);
+        fb = convertView.findViewById(R.id.fb);
+        img1 = convertView.findViewById(R.id.img1);
+        img2 = convertView.findViewById(R.id.img2);
+        call = convertView.findViewById(R.id.call);
+        sms = convertView.findViewById(R.id.sms);
+
+
+        final String num = al.get(position).getNum1();
+
+        fname.setText(al.get(position).getFname());
+        // num1.setText(al.get(position).getNum1());
+        num1.setText(num);
+        fb.setText(al.get(position).getFb());
+
+        final String gender = al.get(position).getGender();
+
+
+        call.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_CALL);
+                intent.setData(Uri.parse("tel://" + num));
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                else {
+                    context.startActivity(intent);
+                }
+                Log.e("call", "inside call");
+            }
+        });
+
+        sms.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context,SmsActivity.class);
+                intent.putExtra("number",num);
+                context.startActivity(intent);
+                Log.e("sms", "inside sms");
+
+
+            }
+        });
+
+
+        Log.e("Now Gender", gender + "******");
+
+        if (gender.equals("female")) {
+
+            Log.e("loop", "in female");
+
+            img1.setVisibility(View.VISIBLE);
+            img2.setVisibility(View.GONE);
+        } else {
+
+            Log.e("loop", "in male");
+            img2.setVisibility(View.VISIBLE);
+            img1.setVisibility(View.GONE);
+        }
+        return convertView;
+    }
+}
