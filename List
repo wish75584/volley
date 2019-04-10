@@ -1,0 +1,131 @@
+package com.bytessystem.phonebook;
+
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+
+public class PhoneListView extends AppCompatActivity implements View.OnClickListener {
+
+
+    ListView lv;
+    ArrayList<Phone> al;
+    ArrayAdapter<Phone> adp;
+    EditText search;
+    ImageView ok;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_phone_list_view);
+
+        lv = findViewById(R.id.lv);
+        search = findViewById(R.id.search);
+        ok = findViewById(R.id.ok);
+        ok.setOnClickListener(this);
+
+
+        DbHelper mhelp = new DbHelper(this);
+
+        final SQLiteDatabase db = mhelp.getReadableDatabase();
+
+        String[] cols = {"fname", "lname", "num1", "num2", "email", "city", "bdate", "gender", "fb_add"};
+
+        Cursor cursor = db.query("PHONEBOOK", cols, "", null, "", "", "");
+        al = new ArrayList<Phone>();
+
+        while (cursor.moveToNext()) {
+            String fname = cursor.getString(cursor.getColumnIndexOrThrow("fname"));
+            String fb = cursor.getString(cursor.getColumnIndexOrThrow("fb_add"));
+            String num1 = cursor.getString(cursor.getColumnIndexOrThrow("num1"));
+            String gender = cursor.getString(cursor.getColumnIndexOrThrow("gender"));
+
+            Phone p1 = new Phone("" + fname, "" + num1, "" + fb, "" + gender);
+
+            al.add(p1);
+            Log.e("fb", fb + "");
+            Log.e("fname", fname + "");
+            Log.e("num1", num1 + "");
+            Log.e("gender", gender + "");
+
+
+        }
+        adp = new PhoneAdapter(this, al);
+        lv.setAdapter(adp);
+
+    }
+    //search querry
+    @Override
+    public void onClick(View view) {
+        DbHelper mhelp = new DbHelper(this);
+
+        final SQLiteDatabase db = mhelp.getReadableDatabase();
+
+        final String num = search.getText().toString();
+        final String name = search.getText().toString();
+
+
+        String SQL_SEARCH = "SELECT * FROM PHONEBOOK WHERE num1 like '%"+num+"%' OR fname like '%"+name+"%'";
+      //  String SQL_SEARCH = "SELECT * FROM PHONEBOOK WHERE fname="+num;
+        //        db.execSQL(SQL_SEARCH);
+        //   String[] cols = {"fname","lname","num1","num2"};
+                Log.e(" SQL_SEARCH", SQL_SEARCH+"");
+        Cursor cursor = db.rawQuery(SQL_SEARCH, null);
+
+        al.clear();
+        while (cursor.moveToNext()) {
+
+            String fname = cursor.getString(cursor.getColumnIndexOrThrow("fname"));
+            String fb = cursor.getString(cursor.getColumnIndexOrThrow("fb_add"));
+            String num1 = cursor.getString(cursor.getColumnIndexOrThrow("num1"));
+            String gender = cursor.getString(cursor.getColumnIndexOrThrow("gender"));
+
+            Phone p1 = new Phone("" + fname, "" + num1, "" + fb, "" + gender);
+
+            al.add(p1);
+        }
+        adp = new PhoneAdapter(this, al);
+        lv.setAdapter(adp);
+    }
+
+
+
+    @Override
+    public void onBackPressed() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(PhoneListView.this);
+
+          builder.setMessage("Are You sure exit...")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.setTitle("Record Save!");
+        alert.show();
+
+    }
+
+
+}
