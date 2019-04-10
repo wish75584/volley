@@ -1,0 +1,95 @@
+package com.bytessystem.phonebook;
+
+import android.content.ContentValues;
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.Toast;
+
+public class CreateContact extends AppCompatActivity implements View.OnClickListener {
+
+
+    EditText fname,lname,num1,num2,email,fb,bdate,city;
+    RadioButton female,male;
+    Button submit;
+    String gender;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_create_contact);
+
+            fname = findViewById(R.id.fname);
+            lname = findViewById(R.id.lname);
+            num1 = findViewById(R.id.num1);
+            num2 = findViewById(R.id.num2);
+            email = findViewById(R.id.email);
+            fb = findViewById(R.id.fb);
+            bdate = findViewById(R.id.bdate);
+            city = findViewById(R.id.city);
+            female = findViewById(R.id.female);
+            male = findViewById(R.id.male);
+            submit = findViewById(R.id.submit);
+
+           submit.setOnClickListener(this);
+
+
+    }
+
+    @Override
+    public void onClick(View view) {
+
+        if(female.isChecked()){
+            gender="female";
+                    }
+         else{
+            gender="male";
+        }
+
+        if(view == submit) {
+            DbHelper mhelp = new DbHelper(this);
+            SQLiteDatabase db =mhelp.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put("fname", fname.getText().toString());
+            values.put("lname", lname.getText().toString());
+            values.put("num1", num1.getText().toString());
+            values.put("num2", num2.getText().toString());
+            values.put("email", email.getText().toString());
+            values.put("city", city.getText().toString());
+            values.put("bdate", bdate.getText().toString());
+            values.put("gender", gender);
+            values.put("fb_add", fb.getText().toString());
+
+            long newRowId = db.insert("PHONEBOOK",null,values);
+
+            Log.e("newRowId",newRowId+"");
+            Toast.makeText(this,"record Inserted",Toast.LENGTH_LONG).show();
+            Log.e("",fname+"");
+            Log.e("",lname+"");
+            Log.e("",city+"");
+            Log.e("",email+"");
+            Log.e("",num1+"");
+            Log.e("",num2+"");
+            Log.e("",fb+"");
+            Log.e("",bdate+"");
+            Log.e("",gender+"");
+
+
+        }
+
+
+
+
+    }
+}
