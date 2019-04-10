@@ -1,0 +1,118 @@
+package com.bytessystem.webservices;
+
+import android.app.ProgressDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.bytessystem.webservices.Utils.Config;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+public class ListDisplay extends AppCompatActivity {
+
+
+    ListView  list;
+
+    ArrayList<ListItem> list_item;
+    ListAdapter list_adpter;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_list_view);
+
+        list = findViewById(R.id.list);
+
+        list_item=new ArrayList<ListItem>();
+        list_adpter=new ListAdapter(ListDisplay.this,list_item);
+        list.setAdapter(list_adpter);
+
+        getData();
+
+    }
+
+
+    void getData(){
+        try {
+
+            final ProgressDialog progress = new ProgressDialog(this);
+            progress.setTitle("Loading");
+            progress.setMessage("Please wait ...");
+            progress.setCancelable(false);
+
+
+            progress.show();
+            String url = Config.geturl;
+
+            Log.e("url", url);
+
+            RequestQueue queue = Volley.newRequestQueue(this);
+
+            StringRequest stringRequest = new StringRequest(Request.Method.GET,
+                    url, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.e("response ", "response : " + response.toString());
+
+                    progress.dismiss();
+
+                    try {
+                        JSONObject jObj = new JSONObject(response);
+
+                        JSONArray regs=jObj.getJSONArray("regs");
+
+                        for(int i=0;i<regs.length();i++)
+                        {
+                            JSONObject data=regs.getJSONObject(i);
+
+                            String id= data.getString("id");
+                            String name= data.getString("name");
+                            String addr= data.getString("addr");
+                            String contact= data.getString("contact");
+                            String email= data.getString("email");
+                            String age= data.getString("age");
+
+                            ListItem list_item=new ListItem(id,name,addr,contact,email,age);
+                            list_adpter.add(list_item);
+                        }
+
+
+
+
+
+                    } catch (JSONException e) {
+                        // JSON error
+                        e.printStackTrace();
+                        Log.e("Json Exception", "Json Exception : " + e.toString());
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("Error", "Error : " + error.toString());
+                    progress.dismiss();
+                }
+            });
+            queue.add(stringRequest);
+        } catch (Exception e) {
+            Log.e("error", e.toString());
+        }
+    }
+}
